@@ -25,7 +25,7 @@ class MockBeneficiariesRepository extends BeneficiariesRepository {
           balance: 0),
     ],
     '2': [
-            const Beneficiary(
+      const Beneficiary(
           name: 'Bob',
           phoneNumber: '+971429876543',
           photo: 'assets/bob.png',
@@ -51,7 +51,7 @@ class MockBeneficiariesRepository extends BeneficiariesRepository {
     await Future.delayed(
         const Duration(milliseconds: 500)); // Simulate network delay
     _userBeneficiaries.putIfAbsent(userId, () => []);
-    _userBeneficiaries[userId]!.add(beneficiary);
+    _userBeneficiaries[userId]?.add(beneficiary);
   }
 
   @override

@@ -26,5 +26,6 @@ class AddBeneficiaryCubit extends Cubit<AddBeneficiaryState> {
     );
 
     emit(BeneficiaryAdded(newBeneficiary));
+    // emit(AddBeneficiaryInitial());
   }
 }

@@ -7,12 +7,11 @@ import 'package:payflex/features/home/cubit/add_beneficiary_form_cubit.dart';
 import 'package:payflex/features/home/cubit/beneficiaries_cubit.dart';
 
 class AddBeneficiaryScreen extends StatelessWidget {
-  const AddBeneficiaryScreen({super.key});
+  AddBeneficiaryScreen({super.key});
+  final addBeneCubit = AddBeneficiaryFormCubit();
 
   @override
   Widget build(BuildContext context) {
-    final addBeneCubit = AddBeneficiaryFormCubit();
-
     return BlocProvider<AddBeneficiaryCubit>(
       create: (context) => AddBeneficiaryCubit(),
       child: Scaffold(
@@ -23,7 +22,8 @@ class AddBeneficiaryScreen extends StatelessWidget {
               if (state is BeneficiaryAdded) {
                 context
                     .read<BeneficiariesCubit>()
-                    .addBeneficiary(state.beneficiary);
+                    .addBeneficiary(context, state.beneficiary);
+
                 Navigator.pop(context);
               } else if (state is BeneficiaryError) {
                 // Navigator.pop(context);

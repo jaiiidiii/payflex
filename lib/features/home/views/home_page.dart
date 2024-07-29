@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:payflex/core/router/route_constants.dart';
-import 'package:payflex/core/utils/helper.dart';
 import 'package:payflex/core/utils/style/color.dart';
 import 'package:payflex/core/utils/style/typo.dart';
 import 'package:payflex/features/home/views/add_beneficiary_screen.dart';
@@ -17,22 +16,11 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: softBlue,
-        body: BlocConsumer<BeneficiariesCubit, BeneficiariesState>(
-          listener: (BuildContext context, BeneficiariesState state) {
-            if (state is BeneficiariesSnackBarError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
+        body: BlocBuilder<BeneficiariesCubit, BeneficiariesState>(
           builder: (context, beneficiariesState) {
             if (beneficiariesState is BeneficiariesLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (beneficiariesState is BeneficiariesLoaded ||
-                beneficiariesState is BeneficiariesSnackBarError) {
+            } else if (beneficiariesState is BeneficiariesLoaded) {
               return const Body();
             } else if (beneficiariesState is BeneficiariesError) {
               return Center(child: Text(beneficiariesState.message));
@@ -72,7 +60,7 @@ class Body extends StatelessWidget {
                           useSafeArea: true,
                           context: context,
                           builder: (context) {
-                            return const AddBeneficiaryScreen();
+                            return AddBeneficiaryScreen();
                           },
                         );
                       },
@@ -105,7 +93,8 @@ class Body extends StatelessWidget {
                             onToggleActive: (beneficiary) {
                               context
                                   .read<BeneficiariesCubit>()
-                                  .toggleBeneficiaryStatus(beneficiary);
+                                  .toggleBeneficiaryStatus(
+                                      context, beneficiary);
                             },
                           );
                         } else if (state is BeneficiariesError) {
@@ -126,73 +115,6 @@ class Body extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  BlocBuilder<BeneficiariesCubit, BeneficiariesState> list2() {
-    return BlocBuilder<BeneficiariesCubit, BeneficiariesState>(
-      builder: (context, beneficiariesState) {
-        final beneficiaries =
-            beneficiariesState is BeneficiariesSnackBarError &&
-                    beneficiariesState.cachedBeneficiaries != null
-                ? beneficiariesState.cachedBeneficiaries
-                : beneficiariesState is BeneficiariesLoaded
-                    ? beneficiariesState.beneficiaries
-                    : null;
-        return beneficiaries == null
-            ? Container()
-            : ListView.builder(
-                shrinkWrap: true,
-                // scrollDirection: Axis.horizontal,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: beneficiaries.length,
-                itemBuilder: (context, index) {
-                  final beneficiary = beneficiaries[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: AssetImage(Helper()
-                          .getImagePathForMobileNumber(
-                              beneficiary.phoneNumber)),
-                    ),
-                    title: Text(beneficiary.name),
-                    subtitle:
-                        Text(beneficiary.isActive ? 'Active' : 'Inactive'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.attach_money),
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              RouteConstants.beneDetail,
-                              arguments: beneficiary.phoneNumber,
-                            );
-                            // Implement top-up action
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            context
-                                .read<BeneficiariesCubit>()
-                                .deleteBeneficiary(beneficiary);
-                          },
-                        ),
-                        Switch(
-                          value: beneficiary.isActive,
-                          onChanged: (value) {
-                            context
-                                .read<BeneficiariesCubit>()
-                                .toggleBeneficiaryStatus(beneficiary);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-      },
     );
   }
 

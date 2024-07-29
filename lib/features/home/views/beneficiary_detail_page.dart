@@ -31,7 +31,7 @@ class BeneficiaryDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(' ${beneficiary.name}'),
+        title: Text(beneficiary.name),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,6 +39,22 @@ class BeneficiaryDetailPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Current Balance',
+                    style: header,
+                  ),
+                  Text(
+                    '${beneficiary.balance} AED',
+                    style: labelBluePrimary,
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 50,
+              ),
               Text(
                 'Manage User',
                 style: header,
@@ -49,7 +65,7 @@ class BeneficiaryDetailPage extends StatelessWidget {
               InkWell(
                 onTap: () => context
                     .read<BeneficiariesCubit>()
-                    .toggleBeneficiaryStatus(beneficiary),
+                    .toggleBeneficiaryStatus(context, beneficiary),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -61,16 +77,18 @@ class BeneficiaryDetailPage extends StatelessWidget {
                         value: beneficiary.isActive,
                         onChanged: (value) => context
                             .read<BeneficiariesCubit>()
-                            .toggleBeneficiaryStatus(beneficiary))
+                            .toggleBeneficiaryStatus(context, beneficiary))
                   ],
                 ),
               ),
               const SizedBox(height: 20),
               InkWell(
-                onTap: () => context
-                    .read<BeneficiariesCubit>()
-                    .deleteBeneficiary(beneficiary)
-                    .then((_) => Navigator.of(context).pop()),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context
+                      .read<BeneficiariesCubit>()
+                      .deleteBeneficiary(context, beneficiary);
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -118,7 +136,7 @@ class BeneficiaryDetailPage extends StatelessWidget {
         try {
           context
               .read<BeneficiariesCubit>()
-              .topupBeneficiary(beneficiary, amount.toDouble())
+              .topupBeneficiary(context, beneficiary, amount.toDouble())
               .then((_) => Navigator.of(context).pop());
         } catch (e) {
           // Show error if top-up fails
@@ -127,7 +145,7 @@ class BeneficiaryDetailPage extends StatelessWidget {
           );
         }
       },
-      child: Text('\$$amount'),
+      child: Text('AED $amount'),
     );
   }
 }

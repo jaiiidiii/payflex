@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:payflex/core/utils/constants.dart';
 import 'package:payflex/features/home/models/beneficiary.dart';
@@ -24,48 +25,61 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
     }
   }
 
-  Future<void> addBeneficiary(Beneficiary beneficiary) async {
+  Future<void> addBeneficiary(
+      BuildContext context, Beneficiary beneficiary) async {
     try {
       if (state is BeneficiariesLoaded) {
         final loadedState = state as BeneficiariesLoaded;
         final activeBene =
             loadedState.beneficiaries.where((b) => b.isActive).length;
         if (activeBene >= 5) {
-          emit(BeneficiariesSnackBarError(
-              "Cannot add more than 5 active beneficiaries.",
-              cachedBeneficiaries: loadedState.beneficiaries));
-          emit(BeneficiariesLoaded(List.from(loadedState.beneficiaries)));
+          _showSnackBar(
+              context, "Cannot add more than 5 active beneficiaries.");
+          return;
         }
+
         await _beneficiariesRepository.addBeneficiary(
             _userCubit.user.id, beneficiary);
-        final updatedBeneficiaries =
-            List<Beneficiary>.from((state as BeneficiariesLoaded).beneficiaries);
-        emit(BeneficiariesLoaded(updatedBeneficiaries));
+
+        emit(BeneficiariesLoaded(loadedState.beneficiaries));
       }
     } catch (e) {
-      emit(BeneficiariesSnackBarError(e.toString()));
+      if (context.mounted) {
+        _showSnackBar(context, e.toString());
+      }
     }
   }
 
-  Future<void> deleteBeneficiary(Beneficiary beneficiary) async {
+  Future<void> deleteBeneficiary(
+      BuildContext context, Beneficiary beneficiary) async {
     try {
       if (state is BeneficiariesLoaded) {
         await _beneficiariesRepository.deleteBeneficiary(
             _userCubit.user.id, beneficiary);
         final loadedState = state as BeneficiariesLoaded;
-        final updatedBeneficiaries =
-            List<Beneficiary>.from(loadedState.beneficiaries)
-              ..removeWhere((b) => b == beneficiary);
-        emit(BeneficiariesLoaded(updatedBeneficiaries));
+
+        emit(BeneficiariesLoaded(loadedState.beneficiaries));
       }
     } catch (e) {
-      emit(BeneficiariesSnackBarError(e.toString()));
+      if (context.mounted) {
+        _showSnackBar(context, e.toString());
+      }
     }
   }
 
-  Future<void> toggleBeneficiaryStatus(Beneficiary bene) async {
+  Future<void> toggleBeneficiaryStatus(
+      BuildContext context, Beneficiary bene) async {
     try {
       if (state is BeneficiariesLoaded) {
+        final loadedState = state as BeneficiariesLoaded;
+        final activeBene =
+            loadedState.beneficiaries.where((b) => b.isActive).length;
+        if (activeBene >= 5) {
+          _showSnackBar(
+              context, "Cannot add more than 5 active beneficiaries.");
+          return;
+        }
+
         await _beneficiariesRepository.toggleBeneficiaryStatus(
             _userCubit.user.id, bene);
         final updatedBeneficiaries =
@@ -74,11 +88,14 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
         emit(BeneficiariesLoaded(updatedBeneficiaries));
       }
     } catch (e) {
-      emit(BeneficiariesSnackBarError(e.toString()));
+      if (context.mounted) {
+        _showSnackBar(context, e.toString());
+      }
     }
   }
 
-  Future<void> topupBeneficiary(Beneficiary bene, double amount) async {
+  Future<void> topupBeneficiary(
+      BuildContext context, Beneficiary bene, double amount) async {
     try {
       if (state is BeneficiariesLoaded) {
         final loadedState = state as BeneficiariesLoaded;
@@ -89,13 +106,7 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
 
         // Check user balance
         if (user.balance < totalAmount) {
-          emit(BeneficiariesSnackBarError(
-            "Insufficient balance.",
-            cachedBeneficiaries: loadedState.beneficiaries,
-          ));
-
-          emit(BeneficiariesLoaded(loadedState.beneficiaries));
-
+          _showSnackBar(context, "Insufficient balance.");
           return;
         }
 
@@ -104,12 +115,10 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
             .getBeneficiaryMonthlyTopUp(user.id, bene);
         if (beneficiaryMonthlyTopUp + amount >
             getBeneficiaryLimit(user.isVerified)) {
-          emit(BeneficiariesSnackBarError(
-            "Exceeded monthly top-up limit for this beneficiary.",
-            cachedBeneficiaries: loadedState.beneficiaries,
-          ));
-          emit(BeneficiariesLoaded(loadedState.beneficiaries));
-
+          if (context.mounted) {
+            _showSnackBar(
+                context, "Exceeded monthly top-up limit for this beneficiary.");
+          }
           return;
         }
 
@@ -117,12 +126,9 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
         final totalMonthlyTopUp =
             await _beneficiariesRepository.getTotalMonthlyTopUp(user.id);
         if (totalMonthlyTopUp + amount > totalMonthlyLimit) {
-          emit(BeneficiariesSnackBarError(
-            "Exceeded total monthly top-up limit.",
-            cachedBeneficiaries: loadedState.beneficiaries,
-          ));
-          emit(BeneficiariesLoaded(loadedState.beneficiaries));
-
+          if (context.mounted) {
+            _showSnackBar(context, "Exceeded total monthly top-up limit.");
+          }
           return;
         }
 
@@ -131,13 +137,22 @@ class BeneficiariesCubit extends Cubit<BeneficiariesState> {
         _userCubit.updateUserBalance(-totalAmount);
 
         // Update beneficiary state
-        final updatedBeneficiaries =
-            List<Beneficiary>.from(loadedState.beneficiaries);
 
-        emit(BeneficiariesLoaded(updatedBeneficiaries));
+        emit(BeneficiariesLoaded(loadedState.beneficiaries));
       }
     } catch (e) {
-      emit(BeneficiariesSnackBarError(e.toString()));
+      if (context.mounted) {
+        _showSnackBar(context, e.toString());
+      }
     }
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
