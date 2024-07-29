@@ -25,6 +25,12 @@ class MockBeneficiariesRepository extends BeneficiariesRepository {
           balance: 0),
     ],
     '2': [
+            const Beneficiary(
+          name: 'Bob',
+          phoneNumber: '+971429876543',
+          photo: 'assets/bob.png',
+          isActive: true,
+          balance: 0),
       const Beneficiary(
           name: 'Richard',
           phoneNumber: '+971527654321',

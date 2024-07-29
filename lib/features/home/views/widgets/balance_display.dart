@@ -17,15 +17,15 @@ class BalanceDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Balance',
+              'Available Balance',
               style: subTitle,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Builder(builder: (context) {
               final balance = context
                   .select((UserCubit userCubit) => userCubit.user.balance);
               return Text(
-                'AED ${balance.toStringAsFixed(2)}',
+                '${balance.toStringAsFixed(2)} AED',
                 style: largePrimary,
               );
             }),

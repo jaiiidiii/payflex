@@ -15,7 +15,7 @@ TextStyle subHeader = GoogleFonts.poppins(
 );
 
 TextStyle header = GoogleFonts.poppins(
-  fontSize: 18,
+  fontSize: 20,
   fontWeight: FontWeight.w500,
 );
 

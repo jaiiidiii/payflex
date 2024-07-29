@@ -12,6 +12,10 @@ class BeneficiariesLoaded extends BeneficiariesState {
   final List<Beneficiary> beneficiaries;
 
   const BeneficiariesLoaded(this.beneficiaries);
+  
+  @override
+  String toString() =>
+      'BeneficiariesLoaded (beneficiaries Length: ${beneficiaries.length} ,beneficiaries: $beneficiaries)';
 }
 
 class BeneficiariesError extends BeneficiariesState {
