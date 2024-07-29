@@ -12,8 +12,10 @@ import 'package:payflex/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    setUp(() => null);
+    tearDown(() => null);
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(PayflexApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
